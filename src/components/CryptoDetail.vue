@@ -9,29 +9,29 @@
                    <strong>{{ cryptoItem[cryptoItemId].name }}</strong> {{ cryptoItem[cryptoItemId].symbol }}
                 </div>
                 <div class='cryptodetail__price'>
-                    <p>Currently trading at <strong class='price'> <i class="fas fa-dollar-sign"></i> {{ parsePrice(cryptoItem[cryptoItemId].quote.USD.price) }}</strong></p>
-                    <small>With total market cap <strong class='price' v-if='!loadingGlobalStat'> <i class="fas fa-dollar-sign"></i> {{ parsePrice(globalStat.quote.USD.total_market_cap) }}</strong></small>
+                    <p>Currently trading at <strong class='price'> {{ parsePrice(cryptoItem[cryptoItemId].quote[this.currency].price) }}</strong></p>
+                    <small>With total market cap <strong class='price' v-if='!loadingGlobalStat'> {{ parsePrice(globalStat.quote[this.currency].total_market_cap) }}</strong></small>
                 </div>
                 <div class='cryptodetail__info'>
                     <div class='cryptodetail__item'>
                         <h3>Volume(24hr)</h3>
                         <p>Volume that has been traded in last 24hrs</p>
-                        <strong class='price'> <i class="fas fa-dollar-sign"></i> {{ parsePrice(cryptoItem[cryptoItemId].quote.USD.volume_24h) }}</strong>
+                        <strong class='price'> {{ parsePrice(cryptoItem[cryptoItemId].quote[this.currency].volume_24h) }}</strong>
                     </div>
                     <div class='cryptodetail__item'>
                         <h3>1hr Change</h3>
                         <p>Price change in the last hour</p>
-                        <strong :class='isNegOrPos(cryptoItem[cryptoItemId].quote.USD.percent_change_1h)'>{{ cryptoItem[cryptoItemId].quote.USD.percent_change_1h.toFixed(2) }} <i class="fas fa-percent fa-xs"></i></strong>
+                        <strong :class='isNegOrPos(cryptoItem[cryptoItemId].quote[this.currency].percent_change_1h)'>{{ cryptoItem[cryptoItemId].quote[this.currency].percent_change_1h.toFixed(2) }} <i class="fas fa-percent fa-xs"></i></strong>
                     </div>
                     <div class='cryptodetail__item'>
                         <h3>24hr Change</h3>
                         <p>Price change in the last 24 hours</p>
-                        <strong :class='isNegOrPos(cryptoItem[cryptoItemId].quote.USD.percent_change_24h)'>{{ cryptoItem[cryptoItemId].quote.USD.percent_change_24h.toFixed(2) }} <i class="fas fa-percent fa-xs"></i></strong>
+                        <strong :class='isNegOrPos(cryptoItem[cryptoItemId].quote[this.currency].percent_change_24h)'>{{ cryptoItem[cryptoItemId].quote[this.currency].percent_change_24h.toFixed(2) }} <i class="fas fa-percent fa-xs"></i></strong>
                     </div>
                     <div class='cryptodetail__item'>
                         <h3>7 day Change</h3>
                         <p>Price change in the last 7 days</p>
-                        <strong :class='isNegOrPos(cryptoItem[cryptoItemId].quote.USD.percent_change_7d)'>{{ cryptoItem[cryptoItemId].quote.USD.percent_change_7d.toFixed(2) }} <i class="fas fa-percent fa-xs"></i></strong>
+                        <strong :class='isNegOrPos(cryptoItem[cryptoItemId].quote[this.currency].percent_change_7d)'>{{ cryptoItem[cryptoItemId].quote[this.currency].percent_change_7d.toFixed(2) }} <i class="fas fa-percent fa-xs"></i></strong>
                     </div>
                 </div>
             </div>
@@ -46,7 +46,7 @@
 <script>
 export default {
     name: 'CryptoDetail',
-    props: ['slug'],
+    props: ['slug', 'currency'],
     computed: {
         cryptoItem(){
             return this.$store.getters.cryptoItem
@@ -80,6 +80,10 @@ export default {
         slug(){
             this.fetchCrypto()
             this.fetchMeta()
+        },
+        currency(){
+            this.fetchCrypto()
+            this.fetchGlobalStat()
         }
     },
     created(){
@@ -89,10 +93,10 @@ export default {
     },
     methods:{
         fetchCrypto(){
-            this.$store.dispatch('fetchCryptoDetailItem', this.slug)
+            this.$store.dispatch('fetchCryptoDetailItem', {slug:this.slug, currency:this.currency})
         },
         fetchGlobalStat(){
-            this.$store.dispatch('fetchGlobalStat')
+            this.$store.dispatch('fetchGlobalStat', this.currency)
         },
         fetchMeta(){
             this.$store.dispatch('fetchCryptoMetaData', this.slug)
@@ -106,7 +110,7 @@ export default {
         },
         parsePrice(price){
             price = parseFloat(price)
-            return price.toLocaleString('en-US', {style:'currency', currency:'USD'}).slice(1)
+            return price.toLocaleString('en-US', {style:'currency', currency:this.currency})
         }
     }
 

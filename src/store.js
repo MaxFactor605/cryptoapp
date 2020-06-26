@@ -47,23 +47,23 @@ const mutations = {
 }
 
 const actions = {
-    fetchCrypto({ commit }){
+    fetchCrypto({ commit }, currency){
         commit('UPDATE_LOADING', true)
-        axios.get('https://cors-anywhere.herokuapp.com/https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?start=1&limit=100&convert=USD', options)
+        axios.get(`https://cors-anywhere.herokuapp.com/https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?start=1&limit=100&convert=${currency}`, options)
             .then((response) => {
                 commit('UPDATE_CRYPTO_CURRENCY_ITEMS', response.data.data)
                 commit('UPDATE_LOADING', false)})
     },
-    fetchCryptoDetailItem({ commit }, slug){
+    fetchCryptoDetailItem({ commit }, args){
         commit('UPDATE_LOADING', true)
-        axios.get(`https://cors-anywhere.herokuapp.com/https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?slug=${slug}&convert=USD`, options)
+        axios.get(`https://cors-anywhere.herokuapp.com/https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?slug=${args.slug}&convert=${args.currency}`, options)
             .then((response) => {
                 commit('UPDATE_CRYPTO_DETAIL_ITEM', response.data.data)
                 commit('UPDATE_LOADING', false)}) 
     },
-    fetchGlobalStat({ commit }){
+    fetchGlobalStat({ commit }, currency){
         commit('UPDATE_LOADING_GLOBAL_STAT', true)
-        axios.get('https://cors-anywhere.herokuapp.com/https://pro-api.coinmarketcap.com/v1/global-metrics/quotes/latest', options)
+        axios.get(`https://cors-anywhere.herokuapp.com/https://pro-api.coinmarketcap.com/v1/global-metrics/quotes/latest?convert=${currency}`, options)
             .then((response) => {
                 commit('UPDATE_GLOBAL_STAT', response.data.data)
                 commit('UPDATE_LOADING_GLOBAL_STAT', false)

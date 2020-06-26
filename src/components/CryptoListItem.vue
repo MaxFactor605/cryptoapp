@@ -4,11 +4,11 @@
             <div class='cryptoitem__feature number first'>{{ number+1 }}</div>
             <div class='cryptoitem__feature name'>{{ cryptoItem.name }}</div>
             <div class='cryptoitem__feature symbol'>{{ cryptoItem.symbol }}</div>
-            <div class='cryptoitem__feature market unnecessary'><i class="fas fa-dollar-sign"></i> {{ parsePrice(cryptoItem.quote.USD.market_cap) }}</div>
-            <div class='cryptoitem__feature price'><i class="fas fa-dollar-sign"></i> {{ parsePrice(cryptoItem.quote.USD.price) }}</div>
-            <div class='cryptoitem__feature supply unnecessary'>{{ parsePrice(cryptoItem.circulating_supply) }} {{ cryptoItem.symbol }}</div>
-            <div class='cryptoitem__feature 1h' :class='isNegOrPos(cryptoItem.quote.USD.percent_change_1h)'>{{ cryptoItem.quote.USD.percent_change_1h.toFixed(2) }} <i class="fas fa-percent fa-xs"></i></div>
-            <div class='cryptoitem__feature 24h last unnecessary' :class='isNegOrPos(cryptoItem.quote.USD.percent_change_24h)'>{{ cryptoItem.quote.USD.percent_change_24h.toFixed(2) }} <i class="fas fa-percent fa-xs"></i></div>
+            <div class='cryptoitem__feature market unnecessary'>{{ parsePrice(cryptoItem.quote[currency].market_cap) }}</div>
+            <div class='cryptoitem__feature price'>{{ parsePrice(cryptoItem.quote[currency].price) }}</div>
+            <div class='cryptoitem__feature supply unnecessary'>{{ parseSupply(cryptoItem.circulating_supply) }} {{ cryptoItem.symbol }}</div>
+            <div class='cryptoitem__feature 1h' :class='isNegOrPos(cryptoItem.quote[currency].percent_change_1h)'>{{ cryptoItem.quote[currency].percent_change_1h.toFixed(2) }} <i class="fas fa-percent fa-xs"></i></div>
+            <div class='cryptoitem__feature 24h last unnecessary' :class='isNegOrPos(cryptoItem.quote[currency].percent_change_24h)'>{{ cryptoItem.quote[currency].percent_change_24h.toFixed(2) }} <i class="fas fa-percent fa-xs"></i></div>
         </div>
     </router-link>
 </template>
@@ -16,7 +16,7 @@
 <script>
 export default {
     name: 'CryptoListItem',
-    props: ['cryptoItem', 'number'],
+    props: ['cryptoItem', 'number', 'currency'],
     methods:{
         isNegOrPos(percent){
             if (percent >= 0){
@@ -27,8 +27,11 @@ export default {
         },
         parsePrice(price){
             price = parseFloat(price)
-            return price.toLocaleString('en-US', {style:'currency', currency:'USD'}).slice(1)
+            return price.toLocaleString('en-US', {style:'currency', currency:this.currency})
         },
+        parseSupply(Supply){
+            return Supply.toLocaleString('en-US')
+        }
 }}
 </script>
 
@@ -66,7 +69,6 @@ export default {
 }
 .last{
     width: fit-content;
-
 }
 .name, .price, .supply{
     font-weight: bold;
@@ -87,6 +89,11 @@ export default {
     }
     .number{
         width: 5%;
+    }
+}
+@media(min-width: 1300px){
+    .last{
+         padding-right: 35px;
     }
 }
 </style>

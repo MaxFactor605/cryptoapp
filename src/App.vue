@@ -12,9 +12,19 @@
           <router-link class='nav__link' v-for='cryptoItem in cryptoSearchItems' :key='cryptoItem.id' :to='cryptoItem.slug'>{{ cryptoItem.name }}</router-link>
         </div>
       </div>
+      <div class='nav__currency'>
+        <select class='nav__select' v-model='currency'>
+          <option class='nav__option' value='USD'>(USD) US dollar</option>
+          <option class='nav__option' value='EUR'>(EUR) Euro</option>
+          <option class='nav__option' value='RUB'>(RUB) Russian ruble </option>
+          <option class='nav__option' value='KRW'>(KRW) South Korean Won </option>
+          <option class='nav__option' value='CNY'>(CNY) Chinese Yuan </option>
+          <option class='nav__option' value='CZK'>(CZK)Czech Koruna </option>
+        </select>
+      </div>
     </nav>
     <main class='main'>
-      <router-view />
+      <router-view :currency='currency'/>
     </main>
   </div>
 </template>
@@ -25,6 +35,7 @@ export default {
   data(){
     return {
       search: '',
+      currency: 'USD',
     }
   },
   computed:{
@@ -36,22 +47,26 @@ export default {
     }
   },
   created(){
-    this.$store.dispatch('fetchCrypto')
+    this.$store.dispatch('fetchCrypto', this.currency)
     window.onclick = event => {
       if(event.target !== document.querySelector('.nav__input')){
         this.hideSearch()
-        
       }
+    }
+  },
+  watch:{
+    currency(){
+      this.$store.dispatch('fetchCrypto', this.currency)
     }
   },
   methods:{
     showSearch(){
       const el = document.querySelector('.nav__searchitems')
-      el.style.visibility = 'visible'
+      el.style.display = 'flex'
     },
     hideSearch(){
       const el = document.querySelector('.nav__searchitems')
-      el.style.visibility = 'hidden'
+      el.style.display = 'none'
     },
     clearSearch(){
       this.search = ''
@@ -104,19 +119,16 @@ body{
   border-radius: 5px;
   border: none;
   border-bottom: 1px solid #ccc;
-  margin-top: 10px;
+  margin: 10px 0;
   width: 100%;
+  
 }
 .nav__input:focus{
   outline: none;
   border-bottom: 1px solid #ccc;
 }
-.nav__searchbut:hover{
-  background-color: #1643b3f6;
-}
 .nav__searchitems{
-  visibility: hidden;
-  display: flex;
+  display: none;
   flex-direction: column;
   overflow-y: auto;
   height: 300px;
@@ -131,6 +143,22 @@ body{
 .nav__link:hover{
   background-color: #ccc;
 }
+.nav__select{
+  background-color: #1153fc;
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  margin: 9px;
+  padding: 1px;
+}
+.nav__select:active{
+  outline: none;
+}
+.nav__option{
+  background-color: #fff;
+  color: #1153fc;
+  font-weight: bold;
+}
 @media (max-width: 500px){
   html, body{
     overflow-x: hidden;
@@ -138,6 +166,9 @@ body{
   }
   .nav{
     width: 100%;
+  }
+  .nav__select{
+    width: 60px;
   }
 }
 </style>

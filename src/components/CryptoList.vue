@@ -3,10 +3,10 @@
         <div v-if='!loadingGlobalStat'>
             <div class='mainfeatures'>
                 <div class='mainfeatures__item'>
-                    <p>Market Cap: <i class="fas fa-dollar-sign"></i> {{ parsePrice(globalStat.quote.USD.total_market_cap) }}</p>
+                    <p>Market Cap: {{ parsePrice(globalStat.quote[currency].total_market_cap) }}</p>
                 </div>
                 <div class='mainfeatures__item'>
-                    <p>Volume (24hr): <i class="fas fa-dollar-sign"></i> {{ parsePrice(globalStat.quote.USD.total_volume_24h) }}</p>
+                    <p>Volume (24hr): {{ parsePrice(globalStat.quote[currency].total_volume_24h) }}</p>
                 </div>
                 <div class='mainfeatures__item'>
                     <p>BTC dominance: {{ globalStat.btc_dominance }} <i class="fas fa-percent fa-xs"></i></p>
@@ -19,18 +19,21 @@
         <div v-if='!loading'>
             <ul class='listheader'>
                 <li class='listheader__el first'>#</li>
-                <li class='listheader__el'>Name</li>
-                <li class='listheader__el'>Symbol</li>
-                <li class='listheader__el unnecessary'>Market Cap</li>
-                <li class='listheader__el'>Price</li>
-                <li class='listheader__el unnecessary'>Circulating Supply</li>
-                <li class='listheader__el'><i class="fas fa-percent fa-xs"></i> 1h</li>
-                <li class='listheader__el last unnecessary'><i class="fas fa-percent fa-xs"></i> 24h</li>
+                <div class='listheader__main'>
+                    <li class='listheader__el' @click='filterByName()'>Name</li>
+                    <li class='listheader__el' @click='filterBySymbol()'>Symbol</li>
+                    <li class='listheader__el unnecessary' @click='filterByCap()'>Market Cap</li>
+                    <li class='listheader__el' @click='filterByPrice()'>Price</li>
+                    <li class='listheader__el unnecessary' @click='filterBySupply()'>Circulating Supply</li>
+                    <li class='listheader__el' @click="filterBy1h()"><i class="fas fa-percent fa-xs"></i> 1h</li>
+                </div>
+                <li class='listheader__el last unnecessary' @click="filterBy24h()"><i class="fas fa-percent fa-xs"></i> 24h</li>
             </ul>
             <CryptoListItem v-for='[number, CryptoItem] in CryptoItems.entries()' 
             :key='CryptoItem.id'
             :cryptoItem='CryptoItem'
-            :number='number'/>
+            :number='number'
+            :currency='currency'/>
         </div>
         <div v-if='loading'>
             <div class="lds-dual-ring"></div>
@@ -42,6 +45,7 @@
 import CryptoListItem from '@/components/CryptoListItem'
 export default {
     name: 'CryptoList',
+    props: ['currency'],
     components:{
         CryptoListItem
     }, 
@@ -60,14 +64,49 @@ export default {
         }
     },
     created(){
-        this.$store.dispatch('fetchCrypto')
-        this.$store.dispatch('fetchGlobalStat')
+        this.$store.dispatch('fetchCrypto', this.currency)
+        this.$store.dispatch('fetchGlobalStat', this.currency)
+    },
+    watch:{
+        currency(){
+            this.$store.dispatch('fetchCrypto', this.currency)
+            this.$store.dispatch('fetchGlobalStat', this.currency)
+        }
     },
     methods:{
         parsePrice(price){
             price = parseFloat(price)
-            return price.toLocaleString('en-US', {style:'currency', currency:'USD'}).slice(1)
+            return price.toLocaleString('en-US', {style:'currency', currency:this.currency})
         },
+        filterByPrice(){
+            this.CryptoItems = this.CryptoItems.sort((item1, item2) => item2.quote[this.currency].price - item1.quote[this.currency].price)
+        },
+        filterByCap(){
+            this.CryptoItems = this.CryptoItems.sort((item1, item2) => item2.quote[this.currency].market_cap - item1.quote[this.currency].market_cap)
+        },
+        filterBySupply(){
+            this.CryptoItems = this.CryptoItems.sort((item1, item2) => item2.circulating_supply - item1.circulating_supply)
+        },
+        filterByName(){
+            this.CryptoItems = this.CryptoItems.sort((item1, item2) => {
+                if (item1.name < item2.name) {return -1}
+                if (item1.name > item2.name) {return 1}
+                return 0
+            })
+        },
+        filterBySymbol(){
+            this.CryptoItems = this.CryptoItems.sort((item1, item2) => {
+                if (item1.symbol < item2.symbol) {return -1}
+                if (item1.symbol > item2.symbol) {return 1}
+                return 0
+            })
+        },
+        filterBy1h(){
+            this.CryptoItems = this.CryptoItems.sort((item1, item2) => item2.quote[this.currency].percent_change_1h - item1.quote[this.currency].percent_change_1h)
+        },
+        filterBy24h(){
+            this.CryptoItems = this.CryptoItems.sort((item1, item2) => item2.quote[this.currency].percent_change_24h - item1.quote[this.currency].percent_change_24h)
+        }
     }
 }
 </script>
@@ -79,25 +118,37 @@ export default {
 }
 .listheader{
     display: flex;
-    justify-content: space-between;
     list-style: none;
-    padding: 20px 15px;
+    padding: 0;
     border-bottom: 1px solid #ccc;
     margin: 0;
+    height: fit-content;
+}
+.listheader__main{
+    display: flex;
+    width: 93%;
+    height: fit-content;
 }
 .listheader__el{
-    width: 14%;
+    width: 16%;
+    height: fit-content;
     text-align: center;
     font-weight: bold;
     font-size: 20px;
     color: #bbb;
+    padding: 10px;
+    cursor: pointer;
+}
+.listheader__el:hover{
+    background-color: #eee;
+    color: #999;
 }
 .first{
     width: fit-content;
 }
 .last{
-    width: fit-content;
-    
+    padding: 10px 0;
+    width: 5%;
 }
 .mainfeatures{
     display: flex;
